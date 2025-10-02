@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import api from './api'
 
 export default function ProductDetail({ id, onBack, sessionId, onCartUpdated }){
   const [item, setItem] = useState(null)

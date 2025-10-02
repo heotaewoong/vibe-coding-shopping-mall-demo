@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import api from './api'
 
 export default function CartPage({ apiBase = '', sessionId, onBack, onCheckout }){
   const [cart, setCart] = useState(null)

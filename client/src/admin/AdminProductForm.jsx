@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import api from '../api'
 
 const CATEGORIES = ['자기계발', '외국어', 'ai']
 
