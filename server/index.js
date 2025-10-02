@@ -38,7 +38,10 @@ const app = express()
 // Configure CORS to allow the client dev origins (and allow configuring via CORS_ORIGINS)
 // Parse CORS_ORIGINS env and trim whitespace to avoid mismatch issues when values contain spaces.
 // If not set, include local dev hosts and the Vercel client origin used for deployment.
-const allowedOrigins = (process.env.CORS_ORIGINS && process.env.CORS_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)) || [
+// Normalize origins: trim whitespace and remove any trailing slash to avoid mismatch like
+// 'https://example.vercel.app/' vs 'https://example.vercel.app'
+const normalize = (u) => u.trim().replace(/\/$/, '')
+const allowedOrigins = (process.env.CORS_ORIGINS && process.env.CORS_ORIGINS.split(',').map(s => normalize(s)).filter(Boolean)) || [
   'http://localhost:5174',
   'http://localhost:5173',
   'https://vibe-coding-shopping-mall-demo-pied.vercel.app'
