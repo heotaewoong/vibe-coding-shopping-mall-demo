@@ -14,8 +14,8 @@ export default function CartPage({ apiBase = '', sessionId, onBack, onCheckout }
       try{
         const token = (() => { try { return localStorage.getItem('accessToken') } catch(e){ return null } })()
         const q = sessionId ? `?sessionId=${encodeURIComponent(sessionId)}` : ''
-        const headers = token ? { Authorization: `Bearer ${token}` } : {}
-          const res = await fetch(`/cart${q}`, { headers })
+          const headers = token ? { Authorization: `Bearer ${token}` } : {}
+          const res = await fetch(api(`/cart${q}`), { headers })
         if (!mounted) return
         if (res.ok){
           const data = await res.json()

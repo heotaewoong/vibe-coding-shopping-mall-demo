@@ -52,7 +52,7 @@ export default function Login({ onCancel, onLogin }) {
           if (sessionId){
             // fetch guest cart
             const guestQ = `?sessionId=${encodeURIComponent(sessionId)}`
-            const guestRes = await fetch(`/cart${guestQ}`)
+            const guestRes = await fetch(api(`/cart${guestQ}`))
             if (!guestRes.ok) {
               console.warn('Could not fetch guest cart for merge')
             } else {
@@ -62,7 +62,7 @@ export default function Login({ onCancel, onLogin }) {
                 // fetch authenticated user's cart to avoid duplicating items
                 let userCartItems = []
                 try{
-                  const userRes = await fetch('/cart', { headers: { Authorization: `Bearer ${token}` } })
+                  const userRes = await fetch(api('/cart'), { headers: { Authorization: `Bearer ${token}` } })
                   if (userRes.ok){
                     const userData = await userRes.json()
                     userCartItems = (userData.cart && Array.isArray(userData.cart.items)) ? userData.cart.items : []
@@ -84,7 +84,7 @@ export default function Login({ onCancel, onLogin }) {
                     continue
                   }
                   try{
-                    await fetch(`/cart`, {
+                    await fetch(api('/cart'), {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                       body: JSON.stringify({ items: [{ itemId: gi.item, quantity: gi.quantity }] })

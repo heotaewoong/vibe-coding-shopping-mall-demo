@@ -20,7 +20,7 @@ export default function OrderPage({ sessionId, user, onBack }){
         const token = (() => { try { return localStorage.getItem('accessToken') } catch(e){ return null } })()
         const q = token ? '' : (sessionId ? `?sessionId=${encodeURIComponent(sessionId)}` : '')
         const headers = token ? { Authorization: `Bearer ${token}` } : {}
-        const res = await fetch(`/cart${q}`, { headers })
+  const res = await fetch(api(`/cart${q}`), { headers })
         if (!mounted) return
         if (res.ok){
           const d = await res.json()
@@ -176,9 +176,9 @@ export default function OrderPage({ sessionId, user, onBack }){
         }
 
         // attempt to clear cart client-side: call DELETE /cart/:id when we have an id
-        try{
+            try{
           if (cart && cart._id){
-            await fetch(`/cart/${cart._id}`, { method: 'DELETE', headers })
+            await fetch(api(`/cart/${cart._id}`), { method: 'DELETE', headers })
           } else {
             // no cart id available (guest cart may be session based) - skip clearing here
             // Future: implement DELETE /cart that accepts sessionId to abandon guest cart
