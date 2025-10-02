@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import './login.css'
 import Navbar from './Navbar'
 
-const API_BASE = import.meta.env.VITE_API_BASE || ''
+import api from './api'
 
 export default function Login({ onCancel, onLogin }) {
   // accept optional props passed from App so Navbar can show consistent state
@@ -26,7 +26,7 @@ export default function Login({ onCancel, onLogin }) {
     setError('')
     setSuccess(false)
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+  const res = await fetch(api('/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -115,7 +115,7 @@ export default function Login({ onCancel, onLogin }) {
       try{
         const token = (() => { try { return localStorage.getItem('accessToken') } catch(e){ return null } })()
         if (!token) return
-        const res = await fetch('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+  const res = await fetch(api('/auth/me'), { headers: { Authorization: `Bearer ${token}` } })
         if (!mounted) return
         if (res.ok){
           // already logged in -> go to main page

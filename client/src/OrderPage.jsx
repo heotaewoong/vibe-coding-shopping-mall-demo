@@ -141,7 +141,7 @@ export default function OrderPage({ sessionId, user, onBack }){
         payment: paymentPayload
       }
       const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-      const res = await fetch('/orders', { method: 'POST', headers, body: JSON.stringify(payload) })
+  const res = await fetch(api('/orders'), { method: 'POST', headers, body: JSON.stringify(payload) })
       if (res.ok){
         const data = await res.json()
         let created = data.order

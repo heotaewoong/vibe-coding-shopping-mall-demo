@@ -65,7 +65,7 @@ export default function CartPage({ apiBase = '', sessionId, onBack, onCheckout }
                           const sid = sessionId || (() => { try { return localStorage.getItem('guestSessionId') } catch(e){ return null } })()
                           const body = { action: 'remove', itemId: li.item, sku: li.sku, sessionId: sid }
                           const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-                          const res = await fetch('/cart/items', { method: 'PATCH', headers, body: JSON.stringify(body) })
+                          const res = await fetch(api('/cart/items'), { method: 'PATCH', headers, body: JSON.stringify(body) })
                           if (res.ok){
                             const data = await res.json()
                             setCart(data.cart)

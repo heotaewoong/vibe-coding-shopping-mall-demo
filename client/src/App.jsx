@@ -4,7 +4,7 @@ import Navbar from './Navbar'
 import AdminDashboard from './admin/AdminDashboard'
 import CartPage from './CartPage'
 
-const API_BASE = import.meta.env.VITE_API_BASE || ''
+import api from './api'
 
 export default function App(){
   const [route, setRoute] = useState('home')
@@ -35,7 +35,7 @@ export default function App(){
       const token = (() => { try { return localStorage.getItem('accessToken') } catch(e){ return null } })()
       if (!token) { setLoadingUser(false); return }
       try {
-        const res = await fetch('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+  const res = await fetch(api('/auth/me'), { headers: { Authorization: `Bearer ${token}` } })
         if (res.ok){
           const data = await res.json()
           setUser(data.user)
@@ -83,7 +83,7 @@ export default function App(){
       setProductsError(null)
       try{
         // request first 6 products to display on the home page
-        const res = await fetch(`/items?page=1&perPage=6`)
+  const res = await fetch(api('/items?page=1&perPage=6'))
         if (!mounted) return
         if (res.ok){
           const data = await res.json()
@@ -110,10 +110,10 @@ export default function App(){
       const token = (() => { try { return localStorage.getItem('accessToken') } catch(e){ return null } })()
       let res
       if (token){
-        res = await fetch('/cart', { headers: { Authorization: `Bearer ${token}` } })
+  res = await fetch(api('/cart'), { headers: { Authorization: `Bearer ${token}` } })
       } else {
         const q = sessionId ? `?sessionId=${encodeURIComponent(sessionId)}` : ''
-        res = await fetch(`/cart${q}`)
+  res = await fetch(api(`/cart${q}`))
       }
       if (res.ok){
         const data = await res.json()

@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 
+import api from './api'
+
 export default function Signup({ apiBase, onCancel, onSigned }){
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -25,9 +27,9 @@ export default function Signup({ apiBase, onCancel, onSigned }){
       // Use provided apiBase (from App) or relative path so Vite can proxy '/users' to backend during dev
       const base = apiBase !== undefined ? apiBase : ''
       const payload = { email, name, password, user_type: userType, address, agree_terms: agreeTerms, agree_marketing: agreeMarketing }
-      // Debug: log the outgoing request details so we can confirm correct URL, headers and body in browser
-      console.debug('DEBUG signup request', { url: `${base}/users`, headers: { 'Content-Type': 'application/json' }, payload })
-      const res = await fetch(`${base}/users`, {
+  // Debug: log the outgoing request details so we can confirm correct URL, headers and body in browser
+  console.debug('DEBUG signup request', { url: api('/users'), headers: { 'Content-Type': 'application/json' }, payload })
+  const res = await fetch(api('/users'), {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         referrerPolicy: 'strict-origin-when-cross-origin',

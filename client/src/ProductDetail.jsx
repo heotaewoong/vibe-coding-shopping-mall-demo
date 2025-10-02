@@ -85,7 +85,7 @@ export default function ProductDetail({ id, onBack, sessionId, onCartUpdated }){
                   const token = (() => { try { return localStorage.getItem('accessToken') } catch(e){ return null } })()
                   const body = { sessionId: sid, items: [{ itemId: item._id, sku: item.sku, quantity: 1 }] }
                   const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }
-                  const res = await fetch('/cart', { method: 'POST', headers, body: JSON.stringify(body) })
+                  const res = await fetch(api('/cart'), { method: 'POST', headers, body: JSON.stringify(body) })
                   if (!res.ok){
                     const txt = await res.text()
                     setAddError('장바구니에 추가하지 못했습니다')

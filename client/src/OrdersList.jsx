@@ -14,7 +14,7 @@ export default function OrdersList({ user, onBack }){
       try{
         const token = (()=>{ try{ return localStorage.getItem('accessToken') } catch(e){ return null } })()
         if (!token){ setError('주문을 보려면 로그인하세요'); setLoading(false); return }
-        const res = await fetch('/orders', { headers: { Authorization: `Bearer ${token}` } })
+  const res = await fetch(api('/orders'), { headers: { Authorization: `Bearer ${token}` } })
         if (!mounted) return
         if (res.ok){ const d = await res.json(); setOrders(d.orders || []) }
         else { const d = await res.json().catch(()=>null); setError((d && d.message) || '주문을 불러오지 못했습니다') }

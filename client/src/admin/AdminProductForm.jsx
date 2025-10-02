@@ -37,7 +37,7 @@ export default function AdminProductForm({ onCancel, onCreated }){
     setLoading(true)
     try{
       const payload = { sku: sku.trim(), name: name.trim(), price: Number(price), category, image: image.trim() || undefined, description: description.trim() || undefined }
-      const res = await fetch('/items', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+  const res = await fetch(api('/items'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       const data = await res.json()
       if (!res.ok) throw new Error(data && data.message ? data.message : 'create_failed')
       onCreated && onCreated(data)
