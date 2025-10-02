@@ -24,11 +24,14 @@ export default function Signup({ apiBase, onCancel, onSigned }){
     try{
       // Use provided apiBase (from App) or relative path so Vite can proxy '/users' to backend during dev
       const base = apiBase !== undefined ? apiBase : ''
+      const payload = { email, name, password, user_type: userType, address, agree_terms: agreeTerms, agree_marketing: agreeMarketing }
+      // Debug: log the outgoing request details so we can confirm correct URL, headers and body in browser
+      console.debug('DEBUG signup request', { url: `${base}/users`, headers: { 'Content-Type': 'application/json' }, payload })
       const res = await fetch(`${base}/users`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         referrerPolicy: 'strict-origin-when-cross-origin',
-        body: JSON.stringify({ email, name, password, user_type: userType, address, agree_terms: agreeTerms, agree_marketing: agreeMarketing })
+        body: JSON.stringify(payload)
       })
       const data = await res.json().catch(()=>null)
       if(res.ok){

@@ -73,6 +73,30 @@ app.use(cors(corsOptions))
 app.use(express.json())
 app.use(cookieParser())
 
+// Optional debug middleware: when DEBUG_REQ=1, log incoming requests (method, path, origin)
+// and a masked preview of JSON bodies to help diagnose malformed payloads in production.
+if (process.env.DEBUG_REQ === '1') {
+  app.use((req, res, next) => {
+    try {
+      const origin = req.get('Origin') || req.headers.origin || null
+      const method = req.method
+      const path = req.originalUrl || req.url
+      let bodyPreview = undefined
+      if (req.body && typeof req.body === 'object') {
+        // shallow clone and mask common sensitive fields
+        bodyPreview = { ...req.body }
+        if (bodyPreview.password) bodyPreview.password = '***masked***'
+        if (bodyPreview.confirmPassword) bodyPreview.confirmPassword = '***masked***'
+      }
+      console.log(`REQ_DEBUG -> ${method} ${path} origin=${origin} body=`, bodyPreview)
+    } catch (e) {
+      // don't break the request if logging fails
+      console.error('REQ_DEBUG failure', e)
+    }
+    next()
+  })
+}
+
 const PORT = process.env.PORT || 5001
 
 // SKIP_DB 모드: DB 연결 없이 라우트만 테스트할 때 사용
