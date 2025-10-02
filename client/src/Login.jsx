@@ -26,6 +26,8 @@ export default function Login({ onCancel, onLogin }) {
     setError('')
     setSuccess(false)
     try {
+      // Debug: show outgoing login request details
+      console.debug('DEBUG login request', { url: api('/auth/login'), headers: { 'Content-Type': 'application/json' }, payload: { email, password } })
   const res = await fetch(api('/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
