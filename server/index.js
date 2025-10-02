@@ -36,19 +36,28 @@ try {
 const app = express()
 
 // Configure CORS to allow the client dev origins (and allow configuring via CORS_ORIGINS)
-const allowedOrigins = (process.env.CORS_ORIGINS && process.env.CORS_ORIGINS.split(',')) || [
+// Parse CORS_ORIGINS env and trim whitespace to avoid mismatch issues when values contain spaces.
+// If not set, include local dev hosts and the Vercel client origin used for deployment.
+const allowedOrigins = (process.env.CORS_ORIGINS && process.env.CORS_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)) || [
   'http://localhost:5174',
   'http://localhost:5173',
+  'https://vibe-coding-shopping-mall-demo-pied.vercel.app'
 ]
+
+console.log('CORS allowedOrigins:', allowedOrigins)
 
 const corsOptions = {
   origin: function(origin, callback){
     // allow requests with no origin (like curl, postman)
     if(!origin) return callback(null, true)
+    // debug log the incoming origin for troubleshooting
+    try { console.log('CORS request origin:', origin) } catch(e) {}
     if(allowedOrigins.indexOf(origin) !== -1){
       callback(null, true)
     } else {
-      callback(new Error('Not allowed by CORS'))
+      // include allowedOrigins in the error message to make misconfiguration obvious in logs
+      const err = new Error('Not allowed by CORS: ' + origin + ' not in ' + JSON.stringify(allowedOrigins))
+      callback(err)
     }
   },
   credentials: true,
