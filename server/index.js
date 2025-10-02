@@ -41,13 +41,32 @@ const app = express()
 // Normalize origins: trim whitespace and remove any trailing slash to avoid mismatch like
 // 'https://example.vercel.app/' vs 'https://example.vercel.app'
 const normalize = (u) => u.trim().replace(/\/$/, '')
-const allowedOrigins = (process.env.CORS_ORIGINS && process.env.CORS_ORIGINS.split(',').map(s => normalize(s)).filter(Boolean)) || [
+// Parse allowed origins. Support wildcard entries like "*.vercel.app" which will be converted to RegExp.
+const rawOrigins = (process.env.CORS_ORIGINS && process.env.CORS_ORIGINS.split(',').map(s => normalize(s)).filter(Boolean)) || [
   'http://localhost:5174',
   'http://localhost:5173',
   'https://vibe-coding-shopping-mall-demo-pied.vercel.app'
 ]
 
-console.log('CORS allowedOrigins:', allowedOrigins)
+// Prepare two structures: exactOrigins (strings) and wildcardRegexes (RegExp) for pattern matching
+const exactOrigins = []
+const wildcardRegexes = []
+for (const o of rawOrigins) {
+  if (o.includes('*')) {
+    // Escape dots, replace '*' with '.*' and anchor the pattern
+    const pattern = '^' + o.split('*').map(s => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$'
+    try {
+      wildcardRegexes.push(new RegExp(pattern, 'i'))
+    } catch (e) {
+      console.warn('Invalid wildcard pattern in CORS_ORIGINS, ignoring:', o)
+    }
+  } else {
+    exactOrigins.push(o)
+  }
+}
+
+console.log('CORS exactOrigins:', exactOrigins)
+console.log('CORS wildcardRegexes:', wildcardRegexes.map(r => r.source))
 
 const corsOptions = {
   origin: function(origin, callback){
@@ -55,13 +74,21 @@ const corsOptions = {
     if(!origin) return callback(null, true)
     // debug log the incoming origin for troubleshooting
     try { console.log('CORS request origin:', origin) } catch(e) {}
-    if(allowedOrigins.indexOf(origin) !== -1){
-      callback(null, true)
-    } else {
-      // include allowedOrigins in the error message to make misconfiguration obvious in logs
-      const err = new Error('Not allowed by CORS: ' + origin + ' not in ' + JSON.stringify(allowedOrigins))
-      callback(err)
+    // If explicitly allowed exact origins list includes it, accept
+    if (exactOrigins.indexOf(origin) !== -1) return callback(null, true)
+
+    // If any wildcard regex matches the origin, accept
+    for (const rx of wildcardRegexes) {
+      try {
+        if (rx.test(origin)) return callback(null, true)
+      } catch (e) {
+        // ignore bad regex tests
+      }
     }
+
+    // include allowedOrigins in the error message to make misconfiguration obvious in logs
+    const err = new Error('Not allowed by CORS: ' + origin + ' not in ' + JSON.stringify(rawOrigins))
+    callback(err)
   },
   credentials: true,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
