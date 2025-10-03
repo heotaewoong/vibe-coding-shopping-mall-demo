@@ -42,25 +42,18 @@ export async function login(req, res){
     console.log('password match result:', ok)
     if (!ok) return res.status(401).json({ error: 'invalid_credentials' })
 
-    const accessToken = signAccessToken(user)
-    const refreshToken = createRefreshToken()
+    // 토큰 생성
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
-    // store refresh token on user (simple approach)
-    const now = new Date()
-    if (SKIP_DB) {
-      user.refreshTokens = user.refreshTokens || []
-      user.refreshTokens.push({ token: refreshToken, createdAt: now, expiresAt: new Date(now.getTime() + REFRESH_EXPIRES_SECONDS*1000) })
-      // mockUsers lives in memory; no DB save needed
-    } else {
-      user.refreshTokens = user.refreshTokens || []
-      user.refreshTokens.push({ token: refreshToken, createdAt: now, expiresAt: new Date(now.getTime() + REFRESH_EXPIRES_SECONDS*1000) })
-      await user.save()
-    }
-
-    // set httpOnly cookie for refresh token
-    res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'lax', maxAge: REFRESH_EXPIRES_SECONDS * 1000 })
-    const userSafe = { _id: user._id, email: user.email, name: user.name, user_type: user.user_type }
-    res.json({ user: userSafe, accessToken })
+    res.json({
+      accessToken: token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role // role 필드 추가!
+      }
+    })
   } catch(err){
     console.error('login error', err)
     res.status(500).json({ error: 'login_failed', message: err.message })
