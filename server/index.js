@@ -189,18 +189,18 @@ import { mockItems as _mockItems } from './controllers/itemController.js'
 app.get('/', (req, res) => res.send({ ok: true, message: 'shopping server running' }))
 
 // Mount items router
-app.use('/items', itemRouter)
+app.use('/api/items', itemRouter)
 
 // Mount cart router
-app.use('/cart', cartRouter)
+app.use('/api/cart', cartRouter)
 
 // Mount orders router
-app.use('/orders', orderRouter)
+app.use('/api/orders', orderRouter)
 
 // mount users router
-app.use('/users', userRouter)
+app.use('/api/users', userRouter)
 // mount auth router
-app.use('/auth', authRouter)
+app.use('/api/auth', authRouter)
 
 // Dev-only debug route to inspect in-memory mock users when SKIP_DB is enabled
 app.get('/__debug/mock-users', (req, res) => {
