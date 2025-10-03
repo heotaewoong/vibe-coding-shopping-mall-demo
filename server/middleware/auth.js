@@ -6,23 +6,36 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret'
 const SKIP_DB = process.env.SKIP_DB === '1'
 
 async function loadUserFromPayload(payload){
-  const userId = payload && (payload.sub || payload.id)
-  if (!userId) return null
+  const userIdRaw = payload && (payload.sub || payload.id)
+  const emailRaw = payload && payload.email
+  if (!userIdRaw && !emailRaw) return null
   if (SKIP_DB){
     const u = mockUsers.find(u => {
       if (!u) return false
-      const matchesId = String(u._id) === String(userId)
-      const matchesEmail = payload.email && String(u.email).toLowerCase() === String(payload.email).toLowerCase()
+      const matchesId = userIdRaw && String(u._id) === String(userIdRaw)
+      const matchesEmail = emailRaw && String(u.email).toLowerCase() === String(emailRaw).toLowerCase()
       return matchesId || matchesEmail
     })
     if (!u) return null
     // return a safe copy
-  const role = u.role || u.user_type || payload.role || payload.user_type || 'customer'
-  return { _id: u._id, email: u.email, name: u.name, user_type: u.user_type || role, role }
+    const role = u.role || u.user_type || payload.role || payload.user_type || 'customer'
+    return { _id: u._id, email: u.email, name: u.name, user_type: u.user_type || role, role }
   }
 
   const User = mongoose.model('User')
-  const userDb = await User.findById(userId).lean()
+  const orConditions = []
+  if (userIdRaw){
+    if (mongoose.Types.ObjectId.isValid(userIdRaw)){
+      orConditions.push({ _id: new mongoose.Types.ObjectId(userIdRaw) })
+    }
+    orConditions.push({ _id: userIdRaw })
+  }
+  if (emailRaw){
+    orConditions.push({ email: String(emailRaw).toLowerCase() })
+  }
+  if (orConditions.length === 0) return null
+
+  const userDb = await User.findOne({ $or: orConditions }).lean()
   if (!userDb) return null
   const role = userDb.role || userDb.user_type || payload.role || payload.user_type || 'customer'
   return { _id: userDb._id, email: userDb.email, name: userDb.name, user_type: userDb.user_type || role, role }

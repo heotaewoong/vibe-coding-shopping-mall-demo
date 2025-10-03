@@ -130,13 +130,14 @@ export async function me(req, res){
   try{
     const payload = jwt.verify(token, JWT_SECRET)
     // support both new tokens (payload.sub) and legacy ones (payload.id)
-    const userId = payload.sub || payload.id
+    const userIdRaw = payload.sub || payload.id
+    const emailRaw = payload.email
     let user
     if (SKIP_DB) {
       user = mockUsers.find(u => {
         if (!u) return false
-        const matchesId = userId && String(u._id) === String(userId)
-        const matchesEmail = payload.email && String(u.email).toLowerCase() === String(payload.email).toLowerCase()
+        const matchesId = userIdRaw && String(u._id) === String(userIdRaw)
+        const matchesEmail = emailRaw && String(u.email).toLowerCase() === String(emailRaw).toLowerCase()
         return matchesId || matchesEmail
       })
       if (!user) return res.status(404).json({ error: 'not_found' })
@@ -145,7 +146,19 @@ export async function me(req, res){
     }
 
     const User = mongoose.model('User')
-    const userDb = await User.findById(userId).lean()
+    const orConditions = []
+    if (userIdRaw){
+      if (mongoose.Types.ObjectId.isValid(userIdRaw)){
+        orConditions.push({ _id: new mongoose.Types.ObjectId(userIdRaw) })
+      }
+      orConditions.push({ _id: userIdRaw })
+    }
+    if (emailRaw){
+      orConditions.push({ email: String(emailRaw).toLowerCase() })
+    }
+    if (orConditions.length === 0) return res.status(404).json({ error: 'not_found' })
+
+    const userDb = await User.findOne({ $or: orConditions }).lean()
     if (!userDb) return res.status(404).json({ error: 'not_found' })
     const safe = {
       _id: userDb._id,
