@@ -14,7 +14,7 @@ export default function ProductDetail({ id, onBack, sessionId, onCartUpdated }){
     async function load(){
       setLoading(true); setError(null)
       try{
-        const res = await fetch(`/items/${encodeURIComponent(id)}`)
+  const res = await fetch(api(`/items/${encodeURIComponent(id)}`))
         if (!mounted) return
         if (res.ok){
           const data = await res.json()

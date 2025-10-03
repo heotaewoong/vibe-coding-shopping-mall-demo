@@ -6,19 +6,26 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret'
 const SKIP_DB = process.env.SKIP_DB === '1'
 
 async function loadUserFromPayload(payload){
-  const userId = payload && payload.sub
+  const userId = payload && (payload.sub || payload.id)
   if (!userId) return null
   if (SKIP_DB){
-    const u = mockUsers.find(u => String(u._id) === String(userId) || String(u.email).toLowerCase() === String(payload.email).toLowerCase())
+    const u = mockUsers.find(u => {
+      if (!u) return false
+      const matchesId = String(u._id) === String(userId)
+      const matchesEmail = payload.email && String(u.email).toLowerCase() === String(payload.email).toLowerCase()
+      return matchesId || matchesEmail
+    })
     if (!u) return null
     // return a safe copy
-    return { _id: u._id, email: u.email, name: u.name, user_type: u.user_type }
+  const role = u.role || u.user_type || payload.role || payload.user_type || 'customer'
+  return { _id: u._id, email: u.email, name: u.name, user_type: u.user_type || role, role }
   }
 
   const User = mongoose.model('User')
   const userDb = await User.findById(userId).lean()
   if (!userDb) return null
-  return { _id: userDb._id, email: userDb.email, name: userDb.name, user_type: userDb.user_type }
+  const role = userDb.role || userDb.user_type || payload.role || payload.user_type || 'customer'
+  return { _id: userDb._id, email: userDb.email, name: userDb.name, user_type: userDb.user_type || role, role }
 }
 
 // Optional authentication: if Authorization Bearer token present and valid, set req.user
@@ -37,7 +44,11 @@ export async function authOptional(req, res, next){
       return next()
     }
     const user = await loadUserFromPayload(payload)
-    if (user) req.user = user
+    if (user) {
+      // normalize role field for downstream use
+      if (!user.role && user.user_type) user.role = user.user_type
+      req.user = user
+    }
     return next()
   } catch(err){
     // on error treat as unauthenticated but don't fail the request (optional)
@@ -59,9 +70,10 @@ export async function authRequired(req, res, next){
       if (process.env.DEBUG_AUTH === '1') console.warn('[authRequired] token verify failed:', e && e.message)
       return res.status(401).json({ error: 'invalid_token' })
     }
-    const user = await loadUserFromPayload(payload)
+  const user = await loadUserFromPayload(payload)
     if (!user) return res.status(401).json({ error: 'invalid_token' })
-    req.user = user
+  if (!user.role && user.user_type) user.role = user.user_type
+  req.user = user
     next()
   } catch(err){
     console.error('authRequired error', err)

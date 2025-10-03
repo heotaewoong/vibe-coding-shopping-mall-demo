@@ -43,13 +43,21 @@ export async function login(req, res){
     if (!ok) return res.status(401).json({ error: 'invalid_credentials' })
 
     // 토큰 생성
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const role = user.role || user.user_type || 'customer'
+    const tokenPayload = {
+      sub: String(user._id),
+      id: String(user._id), // legacy compatibility for older decoders
+      email: user.email,
+      role,
+      user_type: role
+    }
+    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1d' })
 
     const safeUser = {
       id: user._id,
       email: user.email,
       name: user.name,
-      role: user.role || user.user_type || 'customer'
+      role
     }
 
     res.json({
@@ -121,13 +129,18 @@ export async function me(req, res){
   const token = auth.split(' ')[1]
   try{
     const payload = jwt.verify(token, JWT_SECRET)
-    // payload.sub contains user id (we set when signing)
-    const userId = payload.sub
+    // support both new tokens (payload.sub) and legacy ones (payload.id)
+    const userId = payload.sub || payload.id
     let user
     if (SKIP_DB) {
-      user = mockUsers.find(u => String(u._id) === String(userId) || String(u.email).toLowerCase() === String(payload.email).toLowerCase())
+      user = mockUsers.find(u => {
+        if (!u) return false
+        const matchesId = userId && String(u._id) === String(userId)
+        const matchesEmail = payload.email && String(u.email).toLowerCase() === String(payload.email).toLowerCase()
+        return matchesId || matchesEmail
+      })
       if (!user) return res.status(404).json({ error: 'not_found' })
-      const safe = { _id: user._id, email: user.email, name: user.name, user_type: user.user_type }
+      const safe = { _id: user._id, email: user.email, name: user.name, role: user.role || user.user_type || payload.role || 'customer' }
       return res.json({ user: safe })
     }
 
@@ -138,7 +151,7 @@ export async function me(req, res){
       _id: userDb._id,
       email: userDb.email,
       name: userDb.name,
-      role: userDb.role || userDb.user_type || 'customer'
+      role: userDb.role || userDb.user_type || payload.role || payload.user_type || 'customer'
     }
     res.json({ user: safe })
   } catch(err){
