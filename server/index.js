@@ -148,39 +148,19 @@ function startServer(){
   return server
 }
 
-if (!SKIP_DB) {
-  // Prefer MongoDB_ATLAS_URI, fall back to MONGO_URI, then DATABASE_URL. Only use local when none provided.
-  const MONGO_URI = process.env.MongoDB_ATLAS_URI || process.env.MONGO_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/shopping'
+// We'll connect to Mongo _after_ routes mount to avoid serving requests before the DB is ready.
+const MONGO_URI = process.env.MongoDB_ATLAS_URI || process.env.MONGO_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/shopping'
+const validMongoScheme = /^mongodb(\+srv)?:\/\//i
 
-  // Basic validation: mongoose expects a MongoDB URI starting with mongodb:// or mongodb+srv://
-  const validMongoScheme = /^mongodb(\+srv)?:\/\//i
-  if (MONGO_URI && !validMongoScheme.test(MONGO_URI)) {
-    console.error('Invalid MONGO_URI/DATABASE_URL connection string: expected connection string to start with "mongodb://" or "mongodb+srv://"')
-    console.error('Provided value:', MONGO_URI)
-    console.error('If you intended to skip DB during development, set SKIP_DB=1. Otherwise set a valid MongoDB connection string in MONGO_URI or DATABASE_URL.')
-    process.exit(1)
-  }
+if (!SKIP_DB && MONGO_URI && !validMongoScheme.test(MONGO_URI)) {
+  console.error('Invalid MONGO_URI/DATABASE_URL connection string: expected connection string to start with "mongodb://" or "mongodb+srv://"')
+  console.error('Provided value:', MONGO_URI)
+  console.error('If you intended to skip DB during development, set SKIP_DB=1. Otherwise set a valid MongoDB connection string in MONGO_URI or DATABASE_URL.')
+  process.exit(1)
+}
 
-  if (!MONGO_URI) {
-    console.warn('No MONGO_URI set. Use SKIP_DB=1 to skip DB during development.')
-    startServer()
-  } else {
-    // Avoid Mongoose buffering commands when not connected and fail fast on bad URIs
-    mongoose.set('bufferCommands', false)
-    mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
-      .then(() => {
-        console.log('Connected to MongoDB')
-        // Don't start listening until routes are mounted below
-      })
-      .catch(err => {
-        console.error('MongoDB connection error:', err && err.message ? err.message : err)
-        // Exit so the issue is visible; you can set SKIP_DB=1 to bypass DB during development
-        process.exit(1)
-      })
-  }
-} else {
+if (SKIP_DB) {
   console.warn('SKIP_DB=1 -> MongoDB connection skipped')
-  // don't call startServer yet; we'll start after routes are mounted below
 }
 
 import { mockItems as _mockItems } from './controllers/itemController.js'
@@ -227,9 +207,23 @@ try {
   console.error('Failed to seed mock user', e)
 }
 
-// Start listening now that routes and optional DB connection attempt are complete.
-// If MONGO_URI was provided we attempted to connect above; in either case startServer
-startServer()
+// Start listening only after the optional Mongo connection succeeds to avoid bufferCommands errors.
+async function bootstrapServer(){
+  if (!SKIP_DB) {
+    try {
+      mongoose.set('bufferCommands', false)
+      await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
+      console.log('Connected to MongoDB')
+    } catch (err) {
+      console.error('MongoDB connection error:', err && err.message ? err.message : err)
+      process.exit(1)
+    }
+  }
+
+  startServer()
+}
+
+bootstrapServer()
 
 // Error handler - returns JSON in development to help debugging
 app.use((err, req, res, next) => {

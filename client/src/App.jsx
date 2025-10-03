@@ -110,15 +110,15 @@ export default function App(){
       const token = (() => { try { return localStorage.getItem('accessToken') } catch(e){ return null } })()
       let response
       if (token) {
-                response = await fetch(qe("/api/cart"), {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-            } else {
-                const query = sessionId ? `?sessionId=${encodeURIComponent(sessionId)}` : "";
-                response = await fetch(qe(`/api/cart${query}`));
-            }
+        response = await fetch(api('/cart'), {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+      } else {
+        const query = sessionId ? `?sessionId=${encodeURIComponent(sessionId)}` : ''
+        response = await fetch(api(`/cart${query}`))
+      }
       if (response.ok){
         const data = await response.json()
         const items = (data.cart && Array.isArray(data.cart.items)) ? data.cart.items : []
