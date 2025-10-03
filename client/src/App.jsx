@@ -212,7 +212,7 @@ export default function App(){
       )}
 
       {route === 'signup' && (
-        <Signup onCancel={()=>setRoute('home')} apiBase={API_BASE} onSigned={()=>setRoute('home')} />
+                <Signup onCancel={()=>setRoute('home')} onSigned={()=>setRoute('home')} />
       )}
 
       {route === 'login' && (
