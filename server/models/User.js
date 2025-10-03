@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   password: { type: String, required: true },
   user_type: { type: String, required: true, enum: ['customer', 'admin'], default: 'customer' },
+  role: { type: String, enum: ['customer', 'admin'], default: 'customer' }, // Modern field, sync with user_type
   address: { type: String },
   agree_terms: { type: Boolean, default: false },
   agree_marketing: { type: Boolean, default: false },
