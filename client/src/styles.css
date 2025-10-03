@@ -47,10 +47,9 @@ li{ padding:8px 0; border-bottom:1px solid #eee }
 .dropdown{ position:relative }
 .dropdown-toggle{ background:white; border:1px solid #e5e7eb; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:14px }
 .dropdown-toggle:hover{ background:#f9fafb }
-.dropdown-menu{ position:absolute; top:100%; right:0; margin-top:4px; background:white; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1); min-width:180px; padding:6px 0; display:none; z-index:50 }
+.dropdown-menu{ position:absolute; top:100%; right:0; margin-top:4px; background:white; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1); min-width:180px; padding:6px 0; z-index:50 }
 .dropdown-menu button{ display:block; width:100%; text-align:left; background:none; border:none; padding:10px 16px; cursor:pointer; font-size:14px; color:#374151 }
 .dropdown-menu button:hover{ background:#f3f4f6 }
-.dropdown:hover .dropdown-menu{ display:block }
 
 .hero{ padding:56px 24px; background:linear-gradient(180deg,#eef2ff,white); text-align:center }
 .hero h1{ font-size:28px; margin:0 0 8px }

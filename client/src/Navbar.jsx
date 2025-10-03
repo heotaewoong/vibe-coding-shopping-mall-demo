@@ -19,15 +19,19 @@ export default function Navbar({ user, loadingUser, onLogin, onSignup, onLogout,
       <div className="header-actions">
         {loadingUser ? null : (
           user ? (
-            <div className="dropdown">
-              <button className="dropdown-toggle">{user.name}님 환영합니다.</button>
-              <div className="dropdown-menu">
-                <button onClick={onOrders}>내 주문</button>
-                {user.role === 'admin' && (
-                  <button onClick={onAdmin}>관리자 페이지</button>
-                )}
-                <button onClick={onLogout}>로그아웃</button>
-              </div>
+            <div className="dropdown" ref={btnRef}>
+              <button className="dropdown-toggle" onClick={(e)=>{ e.stopPropagation(); setOpen(!open) }}>
+                {user.name}님 환영합니다.
+              </button>
+              {open && (
+                <div className="dropdown-menu">
+                  <button onClick={(e)=>{ e.stopPropagation(); onOrders(); setOpen(false) }}>내 주문</button>
+                  {user.role === 'admin' && (
+                    <button onClick={(e)=>{ e.stopPropagation(); onAdmin(); setOpen(false) }}>관리자 페이지</button>
+                  )}
+                  <button onClick={(e)=>{ e.stopPropagation(); onLogout(); setOpen(false) }}>로그아웃</button>
+                </div>
+              )}
             </div>
           ) : (
             <button className="btn-link" onClick={onLogin}>로그인</button>
