@@ -95,10 +95,11 @@ export default function Login({ onCancel, onLogin }) {
           }
         } catch(e){ console.warn('Could not merge guest cart', e) }
 
-        // onLogin을 먼저 호출하여 App 상태를 업데이트
-        if (onLogin) onLogin(data)
-        // 더 이상 페이지를 강제로 새로고침하지 않음
-        // window.location.href = '/' // 이 줄을 삭제합니다.
+        // onLogin을 호출하여 App의 상태를 업데이트
+        if (onLogin) onLogin(data);
+        
+        // 페이지 강제 새로고침 코드 제거
+        // window.location.href = '/';
       } else {
         setError(data.message || 'Login failed')
       }

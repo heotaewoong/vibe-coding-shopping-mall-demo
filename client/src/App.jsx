@@ -233,7 +233,7 @@ export default function App(){
       )}
 
       {route === 'admin' && (
-        <AdminDashboard onBack={()=>setRoute('home')} onOpenProduct={(id)=>setRoute(`product:${id}`)} />
+        <AdminDashboard onBack={()=>setRoute('home')} onOpenProduct={(id)=>setRoute(`product:${id}`)} user={user} />
       )}
 
       {route === 'cart' && (
