@@ -219,11 +219,15 @@ export default function App(){
         <React.Suspense fallback={<div>Loading...</div>}>
           <Login
             onCancel={()=>setRoute('home')}
-            onLogin={(data)=>{ 
+            onLogin={(data)=>{
               if (data && data.user) {
-                setUser(data.user); 
+                const normalizedUser = {
+                  ...data.user,
+                  role: data.user.role || data.user.user_type || 'customer'
+                }
+                setUser(normalizedUser)
               }
-              setRoute('home');
+              setRoute('home')
             }}
             user={user}
             loadingUser={loadingUser}
