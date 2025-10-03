@@ -38,7 +38,11 @@ export default function App(){
   const res = await fetch(api('/auth/me'), { headers: { Authorization: `Bearer ${token}` } })
         if (res.ok){
           const data = await res.json()
-          setUser(data.user)
+          const normalized = data && data.user ? {
+            ...data.user,
+            role: data.user.role || data.user.user_type || 'customer'
+          } : null
+          setUser(normalized)
         } else {
           // token invalid or expired -> clear
           localStorage.removeItem('accessToken')

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import AdminProductForm from './AdminProductForm'
 import AdminOrders from './AdminOrders'
+import api from '../api'
 
 export default function AdminDashboard({ onBack, onOpenProduct }){
 	const [view, setView] = useState('home')
@@ -42,7 +43,7 @@ export default function AdminDashboard({ onBack, onOpenProduct }){
 					}
 					return
 				}
-				const res = await fetch('/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+				const res = await fetch(api('/auth/me'), { headers: { Authorization: `Bearer ${token}` } })
 				if (!mounted) return
 				if (!res.ok){
 					setAdminError('관리자 권한이 필요합니다.')
@@ -78,7 +79,7 @@ export default function AdminDashboard({ onBack, onOpenProduct }){
 			if (created && (created._id || created.sku)) {
 				try{
 					const qParam = encodeURIComponent(search || '')
-					const res = await fetch(`/items?page=1&perPage=${perPage}${qParam ? `&q=${qParam}` : ''}`)
+					const res = await fetch(api(`/items?page=1&perPage=${perPage}${qParam ? `&q=${qParam}` : ''}`))
 					if (res.ok){
 						const data = await res.json()
 						setItems(Array.isArray(data.items) ? data.items : [])
@@ -116,7 +117,7 @@ export default function AdminDashboard({ onBack, onOpenProduct }){
 		setDetailLoading(true)
 		setDetailError(null)
 		try{
-			const res = await fetch(`/items/${encodeURIComponent(id)}`)
+			const res = await fetch(api(`/items/${encodeURIComponent(id)}`))
 			if (res.ok){
 				const data = await res.json()
 				setDetailItem(data.item || data)
@@ -149,7 +150,7 @@ export default function AdminDashboard({ onBack, onOpenProduct }){
 			setProductsError(null)
 			try{
 				const qParam = encodeURIComponent(search || '')
-				const res = await fetch(`/items?page=1&perPage=${perPage}${qParam ? `&q=${qParam}` : ''}`)
+				const res = await fetch(api(`/items?page=1&perPage=${perPage}${qParam ? `&q=${qParam}` : ''}`))
 				if (!mounted) return
 				if (res.ok){
 					const data = await res.json()
@@ -186,7 +187,7 @@ export default function AdminDashboard({ onBack, onOpenProduct }){
 			setLoadingProducts(true)
 			try{
 				const qParam = encodeURIComponent(search || '')
-				const res = await fetch(`/items?page=${page}&perPage=${perPage}${qParam ? `&q=${qParam}` : ''}`)
+				const res = await fetch(api(`/items?page=${page}&perPage=${perPage}${qParam ? `&q=${qParam}` : ''}`))
 				if (!mounted) return
 				if (res.ok){
 					const data = await res.json()
@@ -210,7 +211,7 @@ export default function AdminDashboard({ onBack, onOpenProduct }){
 	async function handleDelete(id){
 		if (!confirm('정말 이 상품을 삭제하시겠습니까?')) return
 		try{
-			const res = await fetch(`/items/${id}`, { method: 'DELETE' })
+			const res = await fetch(api(`/items/${id}`), { method: 'DELETE' })
 			if (res.ok){
 				setItems(prev => prev.filter(i => String(i._id || i.sku) !== String(id)))
 				setTotalProducts(tp => Math.max(0, tp - 1))
