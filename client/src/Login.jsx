@@ -38,7 +38,6 @@ export default function Login({ onCancel, onLogin }) {
         setSuccess(true)
         setEmail('')
         setPassword('')
-        // save access token to localStorage for client-side use
         try {
           localStorage.setItem('accessToken', data.accessToken)
         } catch (e) {
@@ -96,9 +95,10 @@ export default function Login({ onCancel, onLogin }) {
           }
         } catch(e){ console.warn('Could not merge guest cart', e) }
 
-        // onLogin으로 상태를 먼저 업데이트하고 페이지 새로고침
+        // onLogin을 먼저 호출하여 App 상태를 업데이트
         if (onLogin) onLogin(data)
-        window.location.href = '/'
+        // 더 이상 페이지를 강제로 새로고침하지 않음
+        // window.location.href = '/' // 이 줄을 삭제합니다.
       } else {
         setError(data.message || 'Login failed')
       }
