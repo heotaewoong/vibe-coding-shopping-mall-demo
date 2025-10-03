@@ -51,7 +51,14 @@ export default function AdminDashboard({ onBack, onOpenProduct }){
 					return
 				}
 				const d = await res.json().catch(()=>null)
-				if (!d || !d.user || d.user.user_type !== 'admin'){
+				if (!d || !d.user) {
+					setAdminError('관리자 전용 페이지입니다.')
+					setAdminLoading(false)
+					return
+				}
+				// Check both role (new) and user_type (legacy) fields
+				const userRole = d.user.role || d.user.user_type
+				if (userRole !== 'admin'){
 					setAdminError('관리자 전용 페이지입니다.')
 					setAdminLoading(false)
 					return
