@@ -45,14 +45,16 @@ export async function login(req, res){
     // 토큰 생성
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
+    const safeUser = {
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      role: user.role || user.user_type || 'customer'
+    }
+
     res.json({
       accessToken: token,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        role: user.role // role 필드 추가!
-      }
+      user: safeUser
     })
   } catch(err){
     console.error('login error', err)
@@ -132,7 +134,12 @@ export async function me(req, res){
     const User = mongoose.model('User')
     const userDb = await User.findById(userId).lean()
     if (!userDb) return res.status(404).json({ error: 'not_found' })
-    const safe = { _id: userDb._id, email: userDb.email, name: userDb.name, user_type: userDb.user_type }
+    const safe = {
+      _id: userDb._id,
+      email: userDb.email,
+      name: userDb.name,
+      role: userDb.role || userDb.user_type || 'customer'
+    }
     res.json({ user: safe })
   } catch(err){
     console.error('me error', err)

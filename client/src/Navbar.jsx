@@ -19,22 +19,14 @@ export default function Navbar({ user, loadingUser, onLogin, onSignup, onLogout,
       <div className="header-actions">
         {loadingUser ? null : (
           user ? (
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <div ref={btnRef} style={{position:'relative'}}>
-                <button aria-expanded={open} aria-haspopup="true" onClick={()=>setOpen(s=>!s)} className="btn-link" style={{display:'inline-flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:6}}>
-                  <img src={user.avatar || '/default-avatar.png'} alt="avatar" style={{width:28,height:28,borderRadius:14,objectFit:'cover'}}/>
-                  <span style={{whiteSpace:'nowrap'}}>{user.name}님 환영합니다.</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{marginLeft:6}} xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M6 9l6 6 6-6" stroke="#111827" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
-                {open && (
-                  <div role="menu" style={{position:'absolute',right:0,top:'calc(100% + 8px)',background:'#fff',border:'1px solid rgba(0,0,0,0.08)',boxShadow:'0 8px 24px rgba(0,0,0,0.08)',borderRadius:8,padding:8,minWidth:140,zIndex:60}}>
-                    <button role="menuitem" onClick={()=>{ setOpen(false); onOrders && onOrders() }} style={{display:'block',width:'100%',textAlign:'left',padding:'8px 12px',border:'none',background:'transparent',cursor:'pointer'}}>내 주문</button>
-                    <button role="menuitem" onClick={()=>{ setOpen(false); onLogout && onLogout() }} style={{display:'block',width:'100%',textAlign:'left',padding:'8px 12px',border:'none',background:'transparent',cursor:'pointer'}}>로그아웃</button>
-                    {user.user_type === 'admin' && <button role="menuitem" onClick={()=>{ setOpen(false); onAdmin && onAdmin() }} style={{display:'block',width:'100%',textAlign:'left',padding:'8px 12px',border:'none',background:'transparent',cursor:'pointer'}}>Admin</button>}
-                  </div>
+            <div className="dropdown">
+              <button className="dropdown-toggle">{user.name}님 환영합니다.</button>
+              <div className="dropdown-menu">
+                <button onClick={onOrders}>내 주문</button>
+                {user.role === 'admin' && (
+                  <button onClick={onAdmin}>관리자 페이지</button>
                 )}
+                <button onClick={onLogout}>로그아웃</button>
               </div>
             </div>
           ) : (

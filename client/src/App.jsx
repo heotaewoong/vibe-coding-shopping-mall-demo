@@ -108,15 +108,19 @@ export default function App(){
     try{
       // prefer authenticated cart when token exists, else fall back to guest sessionId
       const token = (() => { try { return localStorage.getItem('accessToken') } catch(e){ return null } })()
-      let res
-      if (token){
-  res = await fetch(api('/cart'), { headers: { Authorization: `Bearer ${token}` } })
-      } else {
-        const q = sessionId ? `?sessionId=${encodeURIComponent(sessionId)}` : ''
-  res = await fetch(api(`/cart${q}`))
-      }
-      if (res.ok){
-        const data = await res.json()
+      let response
+      if (token) {
+                response = await fetch(qe("/api/cart"), {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+            } else {
+                const query = sessionId ? `?sessionId=${encodeURIComponent(sessionId)}` : "";
+                response = await fetch(qe(`/api/cart${query}`));
+            }
+      if (response.ok){
+        const data = await response.json()
         const items = (data.cart && Array.isArray(data.cart.items)) ? data.cart.items : []
         const count = items.reduce((s,i)=>s + (Number(i.quantity) || 0), 0)
         setCartCount(count)
