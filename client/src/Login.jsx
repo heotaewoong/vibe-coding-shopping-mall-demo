@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import './login.css'
 import Navbar from './Navbar'
@@ -97,9 +96,9 @@ export default function Login({ onCancel, onLogin }) {
           }
         } catch(e){ console.warn('Could not merge guest cart', e) }
 
-        // redirect to main page
-        window.location.href = '/'
+        // onLogin으로 상태를 먼저 업데이트하고 페이지 새로고침
         if (onLogin) onLogin(data)
+        window.location.href = '/'
       } else {
         setError(data.message || 'Login failed')
       }
