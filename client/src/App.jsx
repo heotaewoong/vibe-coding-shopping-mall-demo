@@ -35,22 +35,9 @@ export default function App(){
       const token = (() => { try { return localStorage.getItem('accessToken') } catch(e){ return null } })()
       if (!token) { setLoadingUser(false); return }
       try {
-        // 1. 현재 저장된 토큰 확인
-        console.log('Token:', token)
-
-        // 2. 토큰 디코드 (payload 확인)
-        const parts = token.split('.')
-        const payload = JSON.parse(atob(parts[1]))
-        console.log('Token payload:', payload)
-
-        // 3. /auth/me 호출해서 실제 응답 확인
         const res = await fetch(api('/auth/me'), { headers: { Authorization: `Bearer ${token}` } })
-        const data = await res.json()
-        console.log('/auth/me response:', data)
-        console.log('user.role:', data.user?.role)
-        console.log('user.user_type:', data.user?.user_type)
-
         if (res.ok){
+          const data = await res.json()
           const normalized = data && data.user ? {
             ...data.user,
             role: data.user.role || data.user.user_type || 'customer'
